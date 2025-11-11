@@ -1,6 +1,7 @@
 <div class="modal-backdrop" [class.open]="isOpen">
   <div class="modal-dialog">
     <div class="modal-content">
+      <button class="modal-close-btn" (click)="onClose()" aria-label="Close">×</button>
       <h3>Your Profile</h3>
       <p class="text-muted small">
         Set your name and phone to identify you as owner/booker. This is stored locally only.
