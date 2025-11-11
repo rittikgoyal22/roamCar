@@ -7,10 +7,34 @@
       <div class="col d-none d-md-flex"></div>
       <div class="col-auto">
         <div class="d-flex gap-2 flex-wrap justify-content-end">
-          <button class="btn btn-accent" (click)="onListCar()">List your car</button>
-          <button class="btn btn-ghost" (click)="onBookCar()">Book a car</button>
-          <button class="btn btn-ghost" (click)="onMyListings()">My listings</button>
-          <button class="btn btn-ghost" (click)="onMyBookings()">My bookings</button>
+          <ng-container *ngIf="currentUser$ | async as user; else guestActions">
+            <button
+              *ngIf="user.role === 'admin'"
+              class="btn btn-accent"
+              (click)="onListCar()"
+            >
+              List your car
+            </button>
+            <button class="btn btn-ghost" (click)="onBookCar()">Book a car</button>
+            <button
+              *ngIf="user.role === 'admin'"
+              class="btn btn-ghost"
+              (click)="onMyListings()"
+            >
+              My listings
+            </button>
+            <button class="btn btn-ghost" (click)="onMyBookings()">My bookings</button>
+            <span class="user-chip">
+              <span class="user-name">{{ user.name }}</span>
+              <span class="badge-role">{{ user.role }}</span>
+            </span>
+            <button class="btn btn-ghost" (click)="onLogout()">Logout</button>
+          </ng-container>
+          <ng-template #guestActions>
+            <button class="btn btn-ghost" (click)="onBookCar()">Browse cars</button>
+            <button class="btn btn-ghost" (click)="onLogin()">Login</button>
+            <button class="btn btn-accent" (click)="onRegister()">Register</button>
+          </ng-template>
         </div>
       </div>
     </div>

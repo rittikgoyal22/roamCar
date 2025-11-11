@@ -1,8 +1,9 @@
-import { Component, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../services/storage.service';
-import { Car, UserProfile } from '../../models/index';
+import { AuthService } from '../../services/auth.service';
+import { Car, SessionUser } from '../../models/index';
 
 @Component({
   selector: 'app-car-form',
@@ -11,8 +12,9 @@ import { Car, UserProfile } from '../../models/index';
   templateUrl: './car-form.component.html',
   styleUrl: './car-form.component.scss'
 })
-export class CarFormComponent implements OnInit {
+export class CarFormComponent implements OnInit, OnChanges {
   private storageService = inject(StorageService);
+  private authService = inject(AuthService);
 
   @Input() isOpen = false;
   @Input() editingCarId: string | null = null;
@@ -31,10 +33,10 @@ export class CarFormComponent implements OnInit {
 
   imagePreview: string | null = null;
   selectedFile: File | null = null;
-  profile: UserProfile = { name: '', phone: '' };
+  currentUser: SessionUser | null = null;
 
   ngOnInit(): void {
-    this.profile = this.storageService.getProfile();
+    this.currentUser = this.authService.getCurrentUser();
   }
 
   ngOnChanges(): void {
@@ -66,11 +68,12 @@ export class CarFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.profile.phone) {
-      alert('Please set your profile phone first (Profile button)');
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert('Only admins can create or update car listings.');
       return;
     }
-
+    this.currentUser = currentUser;
     if (!this.form.title.trim() || !this.form.year || !this.form.seats || !this.form.price) {
       alert('Please fill in all fields');
       return;
@@ -93,6 +96,16 @@ export class CarFormComponent implements OnInit {
   }
 
   private saveCar(imageData: string): void {
+    const existingCar = this.editingCarId
+      ? this.storageService.getCars().find(c => c.id === this.editingCarId)
+      : null;
+    const owner = this.currentUser || this.authService.getCurrentUser();
+
+    if (!owner) {
+      alert('You must be logged in to list a car.');
+      return;
+    }
+
     const car: Car = {
       id: this.editingCarId || `car-${Date.now()}`,
       title: this.form.title,
@@ -100,9 +113,10 @@ export class CarFormComponent implements OnInit {
       seats: this.form.seats as 4 | 5 | 7,
       price_per_day: this.form.price,
       image: imageData,
-      ownerPhone: this.profile.phone,
-      ownerName: this.profile.name,
-      createdAt: new Date().toISOString()
+      ownerId: existingCar?.ownerId ?? owner.id,
+      ownerName: existingCar?.ownerName ?? owner.name,
+      ownerPhone: existingCar?.ownerPhone ?? owner.phone,
+      createdAt: existingCar?.createdAt ?? new Date().toISOString()
     };
 
     this.storageService.saveCar(car);

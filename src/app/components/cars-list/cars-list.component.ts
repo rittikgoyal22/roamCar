@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { StorageService } from '../../services/storage.service';
-import { Car } from '../../models/index';
+import { AuthService } from '../../services/auth.service';
+import { Car, Booking, SessionUser } from '../../models/index';
 
 @Component({
   selector: 'app-cars-list',
@@ -14,6 +15,7 @@ import { Car } from '../../models/index';
 })
 export class CarsListComponent implements OnInit, OnChanges, OnDestroy {
   private storageService = inject(StorageService);
+  private authService = inject(AuthService);
   private destroy$ = new Subject<void>();
 
   @Input() viewMode: 'all' | 'my-listings' | 'my-bookings' = 'all';
@@ -24,10 +26,10 @@ export class CarsListComponent implements OnInit, OnChanges, OnDestroy {
   searchQuery = '';
   selectedSeats: string = '';
   filteredCars: Car[] = [];
-  filteredBookings: any[] = [];
+  filteredBookings: Booking[] = [];
   cars$ = this.storageService.cars$;
-  profile$ = this.storageService.profile$;
   bookings$ = this.storageService.bookings$;
+  currentUser$ = this.authService.currentUser$;
 
   currentView: 'all' | 'my-listings' | 'my-bookings' = 'all';
   
@@ -52,6 +54,12 @@ export class CarsListComponent implements OnInit, OnChanges, OnDestroy {
         this.applyFilters();
       });
 
+    this.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.applyFilters();
+      });
+
     this.applyFilters();
   }
 
@@ -62,19 +70,28 @@ export class CarsListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   applyFilters(): void {
+    const currentUser = this.authService.getCurrentUser();
+
     if (this.currentView === 'my-bookings') {
-      const profile = this.storageService.getProfile();
-      this.filteredBookings = this.storageService.getBookings().filter(
-        (b: any) => b.phone === profile.phone
-      );
+      if (!currentUser) {
+        this.filteredBookings = [];
+        return;
+      }
+
+      this.filteredBookings = currentUser.role === 'admin'
+        ? this.storageService.getBookingsByCarOwner(currentUser.id)
+        : this.storageService.getBookingsByUser(currentUser.id);
       return;
     }
 
     let filtered = this.storageService.getCars();
 
     if (this.currentView === 'my-listings') {
-      const profile = this.storageService.getProfile();
-      filtered = filtered.filter((car: Car) => car.ownerPhone === profile.phone);
+      if (!currentUser) {
+        filtered = [];
+      } else {
+        filtered = filtered.filter((car: Car) => this.isCarOwnedByUser(car, currentUser));
+      }
     }
 
     if (this.searchQuery.trim()) {
@@ -139,10 +156,23 @@ export class CarsListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   editCar(carId: string): void {
-    this.onEditCar.emit(carId);
+    const currentUser = this.authService.getCurrentUser();
+    const car = this.storageService.getCars().find(c => c.id === carId);
+    if (car && currentUser && this.isCarOwnedByUser(car, currentUser)) {
+      this.onEditCar.emit(carId);
+    } else {
+      alert('You can only edit your own listings.');
+    }
   }
 
   deleteCar(carId: string): void {
+    const currentUser = this.authService.getCurrentUser();
+    const car = this.storageService.getCars().find(c => c.id === carId);
+    if (!car || !currentUser || !this.isCarOwnedByUser(car, currentUser)) {
+      alert('You can only delete your own listings.');
+      return;
+    }
+
     if (confirm('Delete this listing?')) {
       this.storageService.deleteCar(carId);
       this.applyFilters();
@@ -172,5 +202,22 @@ export class CarsListComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private isCarOwnedByUser(car: Car, user: SessionUser): boolean {
+    return !!car.ownerId && car.ownerId === user.id;
+  }
+
+  canManageBooking(booking: Booking): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      return false;
+    }
+
+    if (currentUser.role === 'admin') {
+      return booking.carOwnerId === currentUser.id;
+    }
+
+    return booking.userId === currentUser.id;
   }
 }

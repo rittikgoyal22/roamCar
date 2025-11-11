@@ -31,6 +31,34 @@
           />
         </div>
 
+        <div class="form-group">
+          <label>Role</label>
+          <div class="role-options">
+            <label class="role-option">
+              <input
+                type="radio"
+                name="role"
+                value="user"
+                [(ngModel)]="profile.role"
+                required
+              />
+              Regular user
+            </label>
+            <label class="role-option">
+              <input
+                type="radio"
+                name="role"
+                value="admin"
+                [(ngModel)]="profile.role"
+              />
+              Administrator
+            </label>
+          </div>
+          <small class="text-muted">
+            Admins can manage every listing and booking. Regular users only manage their own.
+          </small>
+        </div>
+
         <div class="d-flex gap-2 justify-content-end">
           <button type="submit" class="btn btn-primary">Save Profile</button>
           <button type="button" class="btn btn-outline-secondary" (click)="onClose()">

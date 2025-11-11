@@ -59,40 +59,43 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="bookerName">Name</label>
-          <input
-            id="bookerName"
-            type="text"
-            class="form-control"
-            [(ngModel)]="form.name"
-            name="name"
-            placeholder="Your name"
-            required
-          />
-        </div>
+        <ng-container *ngIf="currentUser$ | async as currentUser; else unauthenticatedBlock">
+          <div class="form-group">
+            <label>Booking for</label>
+            <div class="readonly-field">
+              <strong>{{ currentUser.name }}</strong>
+              <span class="text-muted">{{ currentUser.phone }}</span>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="bookerPhone">Phone</label>
-          <input
-            id="bookerPhone"
-            type="text"
-            class="form-control"
-            [(ngModel)]="form.phone"
-            name="phone"
-            placeholder="Mobile number"
-            required
-          />
-        </div>
+          <div class="alert alert-info" *ngIf="currentUser.role !== 'user'">
+            Only user accounts can place bookings. Switch to a user account to continue.
+          </div>
 
-        <div class="d-flex gap-2 justify-content-end">
-          <button type="submit" class="btn btn-primary">
-            {{ editingBookingId ? 'Update' : 'Confirm' }} Booking
-          </button>
-          <button type="button" class="btn btn-outline-secondary" (click)="onClose()">
-            Cancel
-          </button>
-        </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="currentUser.role !== 'user'"
+            >
+              {{ editingBookingId ? 'Update' : 'Confirm' }} Booking
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="onClose()">
+              Cancel
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #unauthenticatedBlock>
+          <div class="alert alert-warning">
+            Please log in or register as a user to book a car.
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-outline-secondary" (click)="onClose()">
+              Close
+            </button>
+          </div>
+        </ng-template>
       </form>
     </div>
   </div>

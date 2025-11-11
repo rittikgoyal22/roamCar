@@ -1,7 +1,6 @@
 import { Component, inject, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StorageService } from '../../services/storage.service';
-import { UserProfile } from '../../models/index';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -11,14 +10,16 @@ import { UserProfile } from '../../models/index';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  private storageService = inject(StorageService);
-  profile$ = this.storageService.profile$;
+  private authService = inject(AuthService);
+  currentUser$ = this.authService.currentUser$;
 
   @Output() openListModal = new EventEmitter<void>();
   @Output() openBookingModal = new EventEmitter<void>();
   @Output() openMyListings = new EventEmitter<void>();
   @Output() openMyBookings = new EventEmitter<void>();
-  @Output() openProfile = new EventEmitter<void>();
+  @Output() openLogin = new EventEmitter<void>();
+  @Output() openRegister = new EventEmitter<void>();
+  @Output() requestLogout = new EventEmitter<void>();
   @Output() goHome = new EventEmitter<void>();
 
   onListCar(): void {
@@ -39,5 +40,17 @@ export class HeaderComponent {
 
   onBrandClick(): void {
     this.goHome.emit();
+  }
+
+  onLogin(): void {
+    this.openLogin.emit();
+  }
+
+  onRegister(): void {
+    this.openRegister.emit();
+  }
+
+  onLogout(): void {
+    this.requestLogout.emit();
   }
 }

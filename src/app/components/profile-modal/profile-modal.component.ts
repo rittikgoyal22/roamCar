@@ -17,7 +17,7 @@ export class ProfileModalComponent implements OnInit {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
 
-  profile: UserProfile = { name: '', phone: '' };
+  profile: UserProfile = { name: '', phone: '', role: 'user' };
 
   ngOnInit(): void {
     this.loadProfile();

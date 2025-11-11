@@ -76,3 +76,29 @@
     font-size: 0.8rem;
   }
 }
+
+.badge-role {
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: rgba(255, 107, 107, 0.12);
+  color: #b94545;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 0.85rem;
+  color: #333;
+
+  .user-name {
+    font-weight: 600;
+  }
+}

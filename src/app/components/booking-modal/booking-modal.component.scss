@@ -104,6 +104,41 @@
   }
 }
 
+.readonly-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+  font-size: 0.9rem;
+
+  .text-muted {
+    font-size: 0.8rem;
+    color: #777;
+  }
+}
+
+.alert {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+
+  &.alert-info {
+    background: rgba(64, 139, 255, 0.08);
+    color: #2a62c1;
+    border: 1px solid rgba(64, 139, 255, 0.2);
+  }
+
+  &.alert-warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #9c6b00;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+  }
+}
+
 .btn {
   padding: 10px 16px;
   border-radius: 8px;

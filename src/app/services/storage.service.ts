@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Car, Booking, UserProfile } from '../models/index';
+import { BehaviorSubject } from 'rxjs';
+import { Car, Booking } from '../models/index';
 
 @Injectable({
   providedIn: 'root'
@@ -8,17 +8,13 @@ import { Car, Booking, UserProfile } from '../models/index';
 export class StorageService {
   private readonly STORAGE_KEYS = {
     CARS: 'roamcar_cars_v1',
-    BOOKINGS: 'roamcar_bookings_v1',
-    PROFILE: 'roamcar_profile_v1'
+    BOOKINGS: 'roamcar_bookings_v1'
   };
 
   private carsSubject = new BehaviorSubject<Car[]>([]);
   private bookingsSubject = new BehaviorSubject<Booking[]>([]);
-  private profileSubject = new BehaviorSubject<UserProfile>({ name: '', phone: '' });
-
   cars$ = this.carsSubject.asObservable();
   bookings$ = this.bookingsSubject.asObservable();
-  profile$ = this.profileSubject.asObservable();
 
   constructor() {
     this.initializeStorage();
@@ -26,7 +22,6 @@ export class StorageService {
 
   private initializeStorage(): void {
     this.seedCars();
-    this.loadProfile();
     this.loadCars();
     this.loadBookings();
   }
@@ -39,8 +34,14 @@ export class StorageService {
 
   // Cars CRUD
   loadCars(): void {
-    const cars = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.CARS) || '[]') as Car[];
-    this.carsSubject.next(cars);
+    const stored = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.CARS) || '[]') as Array<Record<string, any>>;
+    const normalized = stored.map(raw => ({
+      ...raw,
+      ownerId: raw['ownerId'] ?? null,
+      ownerName: raw['ownerName'] ?? null,
+      ownerPhone: raw['ownerPhone'] ?? null
+    })) as Car[];
+    this.carsSubject.next(normalized);
   }
 
   getCars(): Car[] {
@@ -48,12 +49,27 @@ export class StorageService {
   }
 
   saveCar(car: Car): void {
+    const normalizedCar: Car = {
+      ...car,
+      ownerId: car.ownerId ?? null,
+      ownerName: car.ownerName ?? null,
+      ownerPhone: car.ownerPhone ?? null
+    };
+
     const cars = this.getCars();
-    const index = cars.findIndex(c => c.id === car.id);
+    const index = cars.findIndex(c => c.id === normalizedCar.id);
     if (index >= 0) {
-      cars[index] = { ...cars[index], ...car, updatedAt: new Date().toISOString() };
+      cars[index] = {
+        ...cars[index],
+        ...normalizedCar,
+        createdAt: cars[index].createdAt,
+        updatedAt: new Date().toISOString()
+      };
     } else {
-      cars.unshift({ ...car, createdAt: new Date().toISOString() });
+      cars.unshift({
+        ...normalizedCar,
+        createdAt: new Date().toISOString()
+      });
     }
     this.saveCarsToStorage(cars);
   }
@@ -70,8 +86,19 @@ export class StorageService {
 
   // Bookings CRUD
   loadBookings(): void {
-    const bookings = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.BOOKINGS) || '[]') as Booking[];
-    this.bookingsSubject.next(bookings);
+    const stored = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.BOOKINGS) || '[]') as Array<Record<string, any>>;
+    const normalized = stored.map(raw => {
+      const legacy = raw as unknown as Record<string, any>;
+      return {
+        ...raw,
+        userId: raw['userId'] ?? legacy['userId'] ?? '',
+        userName: raw['userName'] ?? legacy['userName'] ?? legacy['name'] ?? '',
+        userPhone: raw['userPhone'] ?? legacy['userPhone'] ?? legacy['phone'] ?? '',
+        carOwnerId: raw['carOwnerId'] ?? legacy['carOwnerId'] ?? null,
+        carTitle: raw['carTitle'] ?? legacy['carTitle'] ?? ''
+      } as Booking;
+    });
+    this.bookingsSubject.next(normalized);
   }
 
   getBookings(): Booking[] {
@@ -81,10 +108,27 @@ export class StorageService {
   saveBooking(booking: Booking): void {
     const bookings = this.getBookings();
     const index = bookings.findIndex(b => b.id === booking.id);
+    const car = this.getCars().find(c => c.id === booking.carId);
+    const bookingPayload: Booking = {
+      ...booking,
+      userId: booking.userId ?? '',
+      userName: booking.userName ?? '',
+      userPhone: booking.userPhone ?? '',
+      carOwnerId: car?.ownerId ?? booking.carOwnerId ?? null,
+      carTitle: car?.title ?? booking.carTitle ?? ''
+    };
     if (index >= 0) {
-      bookings[index] = { ...bookings[index], ...booking, updatedAt: new Date().toISOString() };
+      bookings[index] = {
+        ...bookings[index],
+        ...bookingPayload,
+        createdAt: bookings[index].createdAt,
+        updatedAt: new Date().toISOString()
+      };
     } else {
-      bookings.push({ ...booking, createdAt: new Date().toISOString() });
+      bookings.push({
+        ...bookingPayload,
+        createdAt: new Date().toISOString()
+      });
     }
     this.saveBookingsToStorage(bookings);
   }
@@ -99,18 +143,11 @@ export class StorageService {
     this.bookingsSubject.next(bookings);
   }
 
-  // Profile
-  loadProfile(): void {
-    const profile = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.PROFILE) || '{"name":"","phone":""}') as UserProfile;
-    this.profileSubject.next(profile);
+  getBookingsByCarOwner(ownerId: string): Booking[] {
+    return this.getBookings().filter(booking => booking.carOwnerId === ownerId);
   }
 
-  getProfile(): UserProfile {
-    return this.profileSubject.value;
-  }
-
-  saveProfile(profile: UserProfile): void {
-    localStorage.setItem(this.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-    this.profileSubject.next(profile);
+  getBookingsByUser(userId: string): Booking[] {
+    return this.getBookings().filter(booking => booking.userId === userId);
   }
 }

@@ -1,3 +1,11 @@
+<ng-container *ngIf="currentUser$ | async as currentUser; else guestView">
+  <ng-container *ngTemplateOutlet="carsView; context: { currentUser: currentUser }"></ng-container>
+</ng-container>
+<ng-template #guestView>
+  <ng-container *ngTemplateOutlet="carsView; context: { currentUser: null }"></ng-container>
+</ng-template>
+
+<ng-template #carsView let-currentUser="currentUser">
 <div class="cars-container">
   <!-- Hero Section -->
   <section class="hero-section">
@@ -59,7 +67,15 @@
     <div *ngIf="filteredCars.length === 0" class="empty-state">
       <div class="empty-icon">🚗</div>
       <p class="empty-text">
-        {{ currentView === 'my-listings' ? 'You haven\'t listed any cars yet. Start by listing your first car!' : 'No cars found matching your criteria.' }}
+        {{
+          currentView === 'my-listings'
+            ? (currentUser?.role === 'admin'
+                ? 'There are no car listings in the system yet.'
+                : currentUser
+                  ? 'You haven\'t listed any cars yet. Start by listing your first car!'
+                  : 'Log in as an admin to manage listings.')
+            : 'No cars found matching your criteria.'
+        }}
       </p>
     </div>
 
@@ -124,7 +140,15 @@
   <section class="bookings-section" *ngIf="currentView === 'my-bookings'">
     <div *ngIf="filteredBookings.length === 0" class="empty-state">
       <div class="empty-icon">📅</div>
-      <p class="empty-text">You haven't made any bookings yet. Browse cars and make your first booking!</p>
+      <p class="empty-text">
+        {{
+          currentUser?.role === 'admin'
+            ? 'No bookings have been recorded for your cars yet.'
+            : currentUser
+              ? 'You haven\'t made any bookings yet. Browse cars and make your first booking!'
+              : 'Log in to view the bookings you have made.'
+        }}
+      </p>
     </div>
 
     <div class="bookings-list" *ngIf="filteredBookings.length > 0">
@@ -140,11 +164,11 @@
         <div class="booking-middle">
           <div class="booking-detail">
             <span class="detail-label">Name:</span>
-            <span class="detail-value">{{ booking.name }}</span>
+            <span class="detail-value">{{ booking.userName }}</span>
           </div>
           <div class="booking-detail">
             <span class="detail-label">Phone:</span>
-            <span class="detail-value">{{ booking.phone }}</span>
+            <span class="detail-value">{{ booking.userPhone }}</span>
           </div>
           <div class="booking-detail">
             <span class="detail-label">Duration:</span>
@@ -153,9 +177,16 @@
         </div>
         <div class="booking-right">
           <div class="booking-amount">₹{{ booking.total }}</div>
-          <button class="action-btn delete-btn" (click)="deleteBooking(booking.id)">Delete</button>
+          <button
+            *ngIf="canManageBooking(booking)"
+            class="action-btn delete-btn"
+            (click)="deleteBooking(booking.id)"
+          >
+            Delete
+          </button>
         </div>
       </div>
     </div>
   </section>
 </div>
+</ng-template>

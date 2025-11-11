@@ -71,6 +71,35 @@
   }
 }
 
+.role-options {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .role-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    background: #f6f7fb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+
+    input[type='radio'] {
+      width: auto;
+      accent-color: var(--accent, #ff6b6b);
+    }
+
+    &:hover {
+      border-color: var(--accent, #ff6b6b);
+      background: #fff7f7;
+    }
+  }
+}
+
 .btn {
   padding: 10px 16px;
   border-radius: 8px;

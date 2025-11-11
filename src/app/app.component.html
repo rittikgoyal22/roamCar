@@ -1,9 +1,11 @@
 <app-header
   (openListModal)="openCarForm()"
   (openBookingModal)="openBooking()"
-  (openProfile)="openProfile()"
   (openMyListings)="openMyListings()"
   (openMyBookings)="openMyBookings()"
+  (openLogin)="openLogin()"
+  (openRegister)="openRegister()"
+  (requestLogout)="handleLogout()"
   (goHome)="goHome()"
 ></app-header>
 
@@ -16,7 +18,6 @@
   ></app-cars-list>
 </main>
 
-<app-profile-modal [isOpen]="showProfileModal" (close)="closeProfile()"></app-profile-modal>
 <app-car-form
   [isOpen]="showCarFormModal"
   [editingCarId]="editingCarId"
@@ -28,6 +29,20 @@
   [preselectedCarId]="preselectedCarId"
   (close)="closeBooking()"
 ></app-booking-modal>
+
+<app-login-modal
+  [isOpen]="showLoginModal"
+  (close)="closeLogin()"
+  (switchToRegister)="openRegister()"
+  (success)="handleLoginSuccess()"
+></app-login-modal>
+
+<app-register-modal
+  [isOpen]="showRegisterModal"
+  (close)="closeRegister()"
+  (switchToLogin)="openLogin()"
+  (success)="handleRegisterSuccess()"
+></app-register-modal>
 
 
 

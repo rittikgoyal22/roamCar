@@ -1,8 +1,9 @@
-import { Component, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../services/storage.service';
-import { Booking, Car } from '../../models/index';
+import { AuthService } from '../../services/auth.service';
+import { Booking, Car, SessionUser } from '../../models/index';
 
 @Component({
   selector: 'app-booking-modal',
@@ -11,8 +12,9 @@ import { Booking, Car } from '../../models/index';
   templateUrl: './booking-modal.component.html',
   styleUrl: './booking-modal.component.scss'
 })
-export class BookingModalComponent implements OnInit {
+export class BookingModalComponent implements OnInit, OnChanges {
   private storageService = inject(StorageService);
+  private authService = inject(AuthService);
 
   @Input() isOpen = false;
   @Input() editingBookingId: string | null = null;
@@ -22,21 +24,21 @@ export class BookingModalComponent implements OnInit {
   form = {
     carId: '',
     startDate: this.getTodayString(),
-    endDate: this.getTomorrowString(),
-    name: '',
-    phone: ''
+    endDate: this.getTomorrowString()
   };
 
   cars: Car[] = [];
+  currentUser: SessionUser | null = null;
+  currentUser$ = this.authService.currentUser$;
 
   ngOnInit(): void {
     this.loadCars();
-    const profile = this.storageService.getProfile();
-    if (profile.name) this.form.name = profile.name;
-    if (profile.phone) this.form.phone = profile.phone;
+    this.currentUser = this.authService.getCurrentUser();
   }
 
   ngOnChanges(): void {
+    this.currentUser = this.authService.getCurrentUser();
+
     if (this.preselectedCarId) {
       this.form.carId = this.preselectedCarId;
     }
@@ -46,9 +48,7 @@ export class BookingModalComponent implements OnInit {
         this.form = {
           carId: booking.carId,
           startDate: booking.start,
-          endDate: booking.end,
-          name: booking.name,
-          phone: booking.phone
+          endDate: booking.end
         };
       }
     }
@@ -81,8 +81,19 @@ export class BookingModalComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.form.carId || !this.form.startDate || !this.form.endDate || !this.form.name || !this.form.phone) {
-      alert('Please fill in all fields');
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      alert('Please log in to book a car.');
+      return;
+    }
+
+    if (currentUser.role !== 'user') {
+      alert('Only users can book cars. Switch to a user account to continue.');
+      return;
+    }
+
+    if (!this.form.carId || !this.form.startDate || !this.form.endDate) {
+      alert('Please select a car and valid dates.');
       return;
     }
 
@@ -91,6 +102,9 @@ export class BookingModalComponent implements OnInit {
 
     const days = this.calculateDays();
     const total = this.calculateTotal();
+    const existingBooking = this.editingBookingId
+      ? this.storageService.getBookings().find(b => b.id === this.editingBookingId)
+      : null;
 
     const booking: Booking = {
       id: this.editingBookingId || `bk-${Date.now()}`,
@@ -98,11 +112,13 @@ export class BookingModalComponent implements OnInit {
       carTitle: car.title,
       start: this.form.startDate,
       end: this.form.endDate,
-      name: this.form.name,
-      phone: this.form.phone,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userPhone: currentUser.phone,
+      carOwnerId: car.ownerId ?? null,
       days,
       total,
-      createdAt: new Date().toISOString()
+      createdAt: existingBooking?.createdAt ?? new Date().toISOString()
     };
 
     this.storageService.saveBooking(booking);
@@ -119,9 +135,7 @@ export class BookingModalComponent implements OnInit {
     this.form = {
       carId: '',
       startDate: this.getTodayString(),
-      endDate: this.getTomorrowString(),
-      name: '',
-      phone: ''
+      endDate: this.getTomorrowString()
     };
     this.editingBookingId = null;
   }
