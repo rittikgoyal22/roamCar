@@ -1,0 +1,33 @@
+<app-header
+  (openListModal)="openCarForm()"
+  (openBookingModal)="openBooking()"
+  (openProfile)="openProfile()"
+  (openMyListings)="openMyListings()"
+  (openMyBookings)="openMyBookings()"
+  (goHome)="goHome()"
+></app-header>
+
+<main class="container-fluid" style="margin-top: 12px; min-height: calc(100vh - 100px);">
+  <app-cars-list 
+    [viewMode]="currentViewMode"
+    (onBookCar)="openBooking($event)"
+    (onEditCar)="openEditCar($event)"
+    (onClose)="closeMyListings(); closeMyBookings()"
+  ></app-cars-list>
+</main>
+
+<app-profile-modal [isOpen]="showProfileModal" (close)="closeProfile()"></app-profile-modal>
+<app-car-form
+  [isOpen]="showCarFormModal"
+  [editingCarId]="editingCarId"
+  (close)="closeCarForm()"
+></app-car-form>
+<app-booking-modal
+  [isOpen]="showBookingModal"
+  [editingBookingId]="editingBookingId"
+  [preselectedCarId]="preselectedCarId"
+  (close)="closeBooking()"
+></app-booking-modal>
+
+
+

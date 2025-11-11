@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# This file is just a marker. The actual README.md is your main documentation.
+# 
+# To get started, run:
+#   npm install
+#   npm start
+#
+# Then visit: http://localhost:4200

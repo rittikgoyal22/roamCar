@@ -1,0 +1,43 @@
+<div class="modal-backdrop" [class.open]="isOpen">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <h3>Your Profile</h3>
+      <p class="text-muted small">
+        Set your name and phone to identify you as owner/booker. This is stored locally only.
+      </p>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="profileName">Name</label>
+          <input
+            id="profileName"
+            type="text"
+            class="form-control"
+            [(ngModel)]="profile.name"
+            name="name"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="profilePhone">Phone</label>
+          <input
+            id="profilePhone"
+            type="text"
+            class="form-control"
+            [(ngModel)]="profile.phone"
+            name="phone"
+            required
+          />
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="submit" class="btn btn-primary">Save Profile</button>
+          <button type="button" class="btn btn-outline-secondary" (click)="onClose()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

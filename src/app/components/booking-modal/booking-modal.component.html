@@ -1,0 +1,99 @@
+<div class="modal-backdrop" [class.open]="isOpen">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <h3>{{ editingBookingId ? 'Edit Booking' : 'Book a Car' }}</h3>
+      <p class="text-muted small">
+        Select a car and dates. Your booking will be saved locally.
+      </p>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="carSelect">Car</label>
+          <select
+            id="carSelect"
+            class="form-control"
+            [(ngModel)]="form.carId"
+            name="carId"
+            required
+          >
+            <option value="">Select a car</option>
+            <option *ngFor="let car of cars" [value]="car.id">
+              {{ car.title }} — ₹{{ car.price_per_day }}/day
+            </option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input
+              id="startDate"
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.startDate"
+              name="startDate"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input
+              id="endDate"
+              type="date"
+              class="form-control"
+              [(ngModel)]="form.endDate"
+              name="endDate"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="booking-info" *ngIf="form.carId">
+          <div class="info-row">
+            <span>Days:</span>
+            <strong>{{ calculateDays() }}</strong>
+          </div>
+          <div class="info-row">
+            <span>Total Price:</span>
+            <strong>₹{{ calculateTotal() }}</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bookerName">Name</label>
+          <input
+            id="bookerName"
+            type="text"
+            class="form-control"
+            [(ngModel)]="form.name"
+            name="name"
+            placeholder="Your name"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="bookerPhone">Phone</label>
+          <input
+            id="bookerPhone"
+            type="text"
+            class="form-control"
+            [(ngModel)]="form.phone"
+            name="phone"
+            placeholder="Mobile number"
+            required
+          />
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="submit" class="btn btn-primary">
+            {{ editingBookingId ? 'Update' : 'Confirm' }} Booking
+          </button>
+          <button type="button" class="btn btn-outline-secondary" (click)="onClose()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
