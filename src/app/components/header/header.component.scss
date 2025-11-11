@@ -1,22 +1,45 @@
 .header {
-  background: linear-gradient(90deg, #fff 0, #fafafa);
-  padding: 10px 16px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
-  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 14px 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 
   .brand-btn {
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    font-size: 0.95rem;
-    background: none;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-size: 1.3rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     border: none;
     cursor: pointer;
-    color: #333;
     padding: 0;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-gradient);
+      transition: width 0.3s ease;
+    }
 
     &:hover {
-      color: var(--accent, #ff6b6b);
+      transform: translateY(-1px);
+      
+      &::after {
+        width: 100%;
+      }
     }
   }
 
@@ -35,70 +58,111 @@
 }
 
 .btn-accent {
-  background: var(--accent, #ff6b6b);
+  background: var(--accent-gradient);
   color: white;
-  padding: 7px 12px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
   border: 0;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
 
   &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   @media (max-width: 576px) {
-    padding: 6px 10px;
-    font-size: 0.8rem;
+    padding: 8px 16px;
+    font-size: 0.85rem;
   }
 }
 
 .btn-ghost {
-  background: transparent;
-  color: var(--accent, #ff6b6b);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 7px 12px;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--accent);
+  border: 2px solid rgba(255, 107, 107, 0.2);
+  padding: 10px 18px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  backdrop-filter: blur(10px);
 
   &:hover {
-    background: rgba(255, 107, 107, 0.05);
+    background: rgba(255, 107, 107, 0.1);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
   }
 
   @media (max-width: 576px) {
-    padding: 6px 10px;
-    font-size: 0.8rem;
+    padding: 8px 14px;
+    font-size: 0.85rem;
   }
 }
 
 .badge-role {
   margin-left: 8px;
-  padding: 2px 8px;
-  background: rgba(255, 107, 107, 0.12);
-  color: #b94545;
+  padding: 4px 10px;
+  background: var(--accent-gradient);
+  color: white;
   border-radius: 999px;
   font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
 }
 
 .user-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 10px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.04);
-  font-size: 0.85rem;
-  color: #333;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
 
   .user-name {
     font-weight: 600;
+    color: var(--text-primary);
   }
 }
